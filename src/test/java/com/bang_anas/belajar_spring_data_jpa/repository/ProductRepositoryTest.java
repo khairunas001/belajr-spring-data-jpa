@@ -107,4 +107,30 @@ class ProductRepositoryTest {
 
     }
 
+    @Test
+    void testCount(){
+
+        long count = productRepository.count();
+        assertEquals(3L,count);
+
+        count = productRepository.countByCategory_Name("BUDI SPEED NYUENI");
+        assertEquals(2L,count);
+
+        count = productRepository.countByCategory_Name("Test manual 1");
+        assertEquals(1L,count);
+
+        count = productRepository.countByCategory_Name("Test manual 5");
+        assertEquals(0L,count);
+    }
+
+
+    @Test
+    void testExists(){
+        boolean exists = productRepository.existsByName("MacBook Pro Air M5");
+        assertTrue(exists);
+
+        exists = productRepository.existsByName("Playstation 5");
+        assertFalse(exists);
+    }
+
 }
