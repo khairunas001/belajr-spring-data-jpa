@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.support.TransactionOperations;
 
 import java.util.List;
 
@@ -22,6 +23,9 @@ class ProductRepositoryTest {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private TransactionOperations transactionOperations;
 
 
     @Test
@@ -132,5 +136,69 @@ class ProductRepositoryTest {
         exists = productRepository.existsByName("Playstation 5");
         assertFalse(exists);
     }
+
+    @Test
+    void testDeleteWrapInTransactionOperations(){
+        // delete query secara default di gunakan di dalam wrap transactionOperations
+        transactionOperations.executeWithoutResult(transactionStatus -> { // Transaction 1
+            Category category = categoryRepository.findById(2L).orElse(null);
+            assertNotNull(category);
+
+            Product product =new Product();
+            product.setName("Mobil Toyota Mirai");
+            product.setPrice(500_000_000L);
+            product.setCategory(category);
+            productRepository.save(product); // Transaction 1
+
+            int delete = productRepository.deleteByName("Mobil Toyota Mirai"); // Transaction 1
+            assertEquals(1,delete);
+
+            delete = productRepository.deleteByName("Mobil Toyota Mirai"); // Transaction 1
+            assertEquals(0,delete);
+        });
+    }
+
+    @Test
+    void testDeleteUsingTransactionalAnnotationOnDeletePrefixQuery() {
+
+        // jika menggunakan ini akan terdapat 3 transaction sehingga
+        // jika salah satu gagal maka tidak akan di rollback, gunakan sesuai kebutuhan
+        Category category = categoryRepository.findById(2L).orElse(null);
+        assertNotNull(category);
+
+        Product product = new Product();
+        product.setName("Mobil Toyota Mirai");
+        product.setPrice(500_000_000L);
+        product.setCategory(category);
+        productRepository.save(product);  // Transaction 1
+
+        int delete = productRepository.deleteByName("Mobil Toyota Mirai"); // Transaction 2
+        assertEquals(1, delete);
+
+        delete = productRepository.deleteByName("Mobil Toyota Mirai"); // Transaction 3
+        assertEquals(0, delete);
+
+    }
+
+    @Test
+    void searchProduct(){
+        // querry dibawah tidak bisa karena sort harus dimasukkan di @NamedQuerry
+        // jika menggunakan Sort.Order.desc("id")) tidak akan dikirim query nya
+        // Pageable pageable = PageRequest.of(0,1, Sort.by(Sort.Order.desc("id")));
+        Pageable pageable = PageRequest.of(0,1);
+        List<Product> products = productRepository.searchProductUsingName("MacBook Pro Air M5",pageable);
+        assertEquals(1,products.size());
+        assertEquals("MacBook Pro Air M5", products.get(0).getName());
+    }
+
+    @Test
+    void searchProductLike(){
+        List<Product> products = productRepository.searchProduct("%5%");
+        assertEquals(2, products.size());
+
+        products = productRepository.searchProduct("%NYUENI%");
+        assertEquals(2,products.size());
+    }
+
 
 }
