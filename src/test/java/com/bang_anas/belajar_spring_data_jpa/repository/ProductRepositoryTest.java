@@ -193,11 +193,20 @@ class ProductRepositoryTest {
 
     @Test
     void searchProductLike(){
-        List<Product> products = productRepository.searchProduct("%5%");
-        assertEquals(2, products.size());
+        Pageable pageable = PageRequest.of(0,1);
+        Page<Product> products = productRepository.searchProduct("%5%",pageable);
+        assertEquals(1, products.getContent().size());
 
-        products = productRepository.searchProduct("%NYUENI%");
-        assertEquals(2,products.size());
+        assertEquals(0, products.getNumber());
+        assertEquals(2, products.getTotalPages());
+        assertEquals(2, products.getTotalElements());
+
+        products = productRepository.searchProduct("%NYUENI%",pageable);
+        assertEquals(1,products.getContent().size());
+
+        assertEquals(0, products.getNumber());
+        assertEquals(2, products.getTotalPages());
+        assertEquals(2, products.getTotalElements());
     }
 
 

@@ -15,8 +15,10 @@ import java.util.List;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    @Query(value = "select p from Product p where p.name like :name or p.category.name like :name")
-    List<Product> searchProduct(@Param("name") String name);
+    @Query(value = "select p from Product p where p.name like :name or p.category.name like :name",
+                countQuery = "select count(p) from Product p where p.name like :name or p.category.name like :name"
+    )
+    Page<Product> searchProduct(@Param("name") String name, Pageable pageable);
 
     List<Product> searchProductUsingName(@Param("name") String name, Pageable pageable);
 
