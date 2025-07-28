@@ -1,5 +1,6 @@
 package com.bang_anas.belajar_spring_data_jpa.repository;
 
+import com.bang_anas.belajar_spring_data_jpa.category.Category;
 import com.bang_anas.belajar_spring_data_jpa.category.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,9 +13,12 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
+
+    Stream<Product> streamAllByCategory(Category category);
 
     @Modifying
     @Query("update Product p set p.price = :price where p.id = :id")
@@ -29,7 +33,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     int updateProductsPriceToZero(@Param("id") Long id);
 
     @Query(value = "select p from Product p where p.name like :name or p.category.name like :name",
-                countQuery = "select count(p) from Product p where p.name like :name or p.category.name like :name"
+            countQuery = "select count(p) from Product p where p.name like :name or p.category.name like :name"
     )
     Page<Product> searchProduct(@Param("name") String name, Pageable pageable);
 

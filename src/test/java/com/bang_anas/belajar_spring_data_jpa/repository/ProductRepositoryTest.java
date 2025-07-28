@@ -9,9 +9,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionOperations;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -236,6 +238,19 @@ class ProductRepositoryTest {
 
             Product product = productRepository.findById(1L).orElse(null);
             assertEquals(10_000_000L,product.getPrice());
+        });
+    }
+
+    @Test
+        //    @Transactional
+    void stream() {
+        transactionOperations.executeWithoutResult(transactionStatus -> {
+            Category category = categoryRepository.findById(2L).orElse(null);
+            assertNotNull(category);
+
+            Stream<Product> stream = productRepository.streamAllByCategory(category);
+            stream.forEach(product -> System.out.println(product.getId() + " : " + product.getName()));
+
         });
     }
 
