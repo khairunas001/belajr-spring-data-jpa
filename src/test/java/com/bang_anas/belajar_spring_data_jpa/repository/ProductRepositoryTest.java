@@ -209,5 +209,34 @@ class ProductRepositoryTest {
         assertEquals(2, products.getTotalElements());
     }
 
+    @Test
+    void modifying(){
+        transactionOperations.executeWithoutResult(transactionStatus -> {
+            int total = productRepository.deleteProductUsingName("Wrong");
+            assertEquals(0,total);
+
+            total = productRepository.updateProductsPriceToZero(1L);
+            assertEquals(1,total);
+
+            Product product = productRepository.findById(1L).orElse(null);
+            assertNotNull(product);
+            assertEquals(0,product.getPrice());
+
+        });
+    }
+
+    @Test
+    void modifying2(){
+        transactionOperations.executeWithoutResult(transactionStatus -> {
+            int updatedProductsPrice = productRepository.updateProductsPrice(
+                    1L,
+                    10_000_000L
+            );
+            assertEquals(1,updatedProductsPrice);
+
+            Product product = productRepository.findById(1L).orElse(null);
+            assertEquals(10_000_000L,product.getPrice());
+        });
+    }
 
 }
