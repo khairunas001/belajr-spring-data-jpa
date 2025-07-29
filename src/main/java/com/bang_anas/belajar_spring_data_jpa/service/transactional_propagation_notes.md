@@ -21,7 +21,7 @@
 
 ---
 
-## 📘 Contoh Penggunaan
+## 📘 Contoh Penggunaan Propagation
 
 ### 1. `REQUIRED` (default)
 ```java
