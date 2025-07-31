@@ -5,10 +5,7 @@ import com.bang_anas.belajar_spring_data_jpa.category.Product;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionOperations;
 
@@ -254,4 +251,26 @@ class ProductRepositoryTest {
         });
     }
 
+
+    @Test
+    void slice(){
+       Pageable firstPage = PageRequest.of(0,1);
+
+        Category category = categoryRepository.findById(2L).orElse(null);
+        assertNotNull(category);
+
+        Slice<Product> slice = productRepository.findAllByCategory(
+                category,
+                firstPage
+        );
+            //tampilkan konten
+        while(slice.hasNext()){
+            slice = productRepository.findAllByCategory(
+                    category,
+                    slice.nextPageable()
+            );
+            //tampilkan konten
+        }
+
+    }
 }
