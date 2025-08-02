@@ -2,10 +2,13 @@ package com.bang_anas.belajar_spring_data_jpa.repository;
 
 import com.bang_anas.belajar_spring_data_jpa.category.Category;
 import com.bang_anas.belajar_spring_data_jpa.category.Product;
+import com.bang_anas.belajar_spring_data_jpa.model.ProductPrice;
+import com.bang_anas.belajar_spring_data_jpa.model.SimpleProduct;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionOperations;
 
@@ -298,5 +301,30 @@ class ProductRepositoryTest {
             product.setPrice(10_000_000L);
             productRepository.save(product);
         });
+    }
+
+    @Test
+    void spesification() {
+        Specification<Product> specification = (root, criteria, builder) -> {
+            return criteria.where(
+                    builder.or(
+                            builder.equal(root.get("name"),("MacBook Pro Air M5")),
+                            builder.equal(root.get("name"),("PS5"))
+                    )
+            ).getRestriction();
+        };
+
+        List<Product> products = productRepository.findAll(specification);
+        assertEquals(2,products.size());
+    }
+
+
+    @Test
+    void projection() {
+        List<SimpleProduct> simpleProducts = productRepository.findAllByNameLike("%5%", SimpleProduct.class);
+        assertEquals(2,simpleProducts.size());
+
+        List<ProductPrice> productPrices = productRepository.findAllByNameLike("%5%", ProductPrice.class);
+        assertEquals(2,productPrices.size());
     }
 }
